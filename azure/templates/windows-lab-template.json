@@ -192,7 +192,7 @@
         },
         "vmPublicIP": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2021-05-01').properties.ipAddress]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')), '2021-05-01').ipAddress]"
         }
     }
 }
