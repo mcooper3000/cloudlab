@@ -1,0 +1,16 @@
+Known Issues
+* Using windows-lab-template.json Each VM is on the same Private IP 
+
+Objectives
+* Create templates for DC and Member
+* Create 2 vnets and each have a DC and mem server to show office locations
+* Create firewall rules between DCs
+* Create DCPromo First DC script
+* Create DCPromo Secondary DC script
+* Create Site Link and Subnet config
+* Create OU structure, Users and Groups
+* Create ADJoin script
+* Join Members to Domain 
+
+
+

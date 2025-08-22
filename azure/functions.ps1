@@ -12,9 +12,10 @@ Functions are modular to allow reuse and customization.
 # Load the Az module
 if (-not (Get-Module -Name Az -ListAvailable)) {
     Write-Host "Installing Az module..." -ForegroundColor Yellow
-    Install-Module -Name Az -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+    Install-Module -Name Az -Force -AllowClobber -ErrorAction Stop
 }
-Import-Module -Name Az -ErrorAction Stop
+Import-Module -Name Az.Resources -ErrorAction Stop
+Import-Module -Name Az.Compute -ErrorAction Stop
 
 # Function to authenticate to Azure
 function Connect-Azure {
@@ -98,7 +99,16 @@ function Initialize-Lab {
     )
 
     Connect-Azure
-    Create-ResourceGroup -ResourceGroupName $ResourceGroupName -Location $Location
+    if (-not $ResourceGroupName) {
+        $resourceGroup = Get-AzResourceGroup | Select-Object -First 1
+        $resourceGroupName = $resourceGroup.ResourceGroupName
+    } else {
+        $resourceGroup = Get-AzResourceGroup -Name $ResourceGroupName 
+        if (-not $resourceGroup) {
+           $resourceGroup =  Create-ResourceGroup -ResourceGroupName $ResourceGroupName -Location $Location
+           $resourceGroupName = $resourceGroup.ResourceGroupName
+        }
+    }
 
     Deploy-DomainControllers -ResourceGroupName $ResourceGroupName `
         -TemplateFilePath $DomainControllerTemplate `
@@ -113,4 +123,21 @@ function Initialize-Lab {
         -TemplateParametersFilePath $ClientSystemParameters
 
     Write-Host "Lab environment initialized successfully!" -ForegroundColor Green
+}
+
+function New-RdpSession {
+    param (
+        [string]$IPAddress,
+        [string]$Username,
+        [string]$RdpFilePath = "$env:TEMP\custom_connection.rdp"
+    )
+
+    $rdpContent = @"
+full address:s:$IPAddress
+username:s:$Username
+prompt for credentials:i:1
+"@
+
+    $rdpContent | Set-Content -Path $RdpFilePath -Encoding ASCII
+    Start-Process "mstsc.exe" -ArgumentList "`"$RdpFilePath`""
 }

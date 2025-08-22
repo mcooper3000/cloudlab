@@ -54,14 +54,21 @@
             "metadata": {
                 "description": "Address prefix for the subnet."
             }
+        },
+        "storageAccount": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the storage account hosting the script."
+            }
         }
     },
     "variables": {
-        "networkInterfaceName": "[concat(parameters('vmName'), '-nic')]",
-        "virtualNetworkName": "[concat(parameters('vmName'), '-vnet')]",
+        "uniqueSuffix": "[uniqueString(resourceGroup().id, parameters('vmName'))]",
+        "networkInterfaceName": "[concat(parameters('vmName'), '-', variables('uniqueSuffix'), '-nic')]",
+        "virtualNetworkName": "[concat(parameters('vmName'), '-', variables('uniqueSuffix'), '-vnet')]",
         "subnetName": "default",
-        "publicIpName": "[concat(parameters('vmName'), '-pip')]",
-        "nsgName": "[concat(parameters('vmName'), '-nsg')]"
+        "publicIpName": "[concat(parameters('vmName'), '-', variables('uniqueSuffix'), '-pip')]",
+        "nsgName": "[concat(parameters('vmName'), '-', variables('uniqueSuffix'), '-nsg')]"
     },
     "resources": [
         {
@@ -173,7 +180,15 @@
                     },
                     "osDisk": {
                         "createOption": "FromImage"
-                    }
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "diskSizeGB": 10,
+                            "createOption": "Empty",
+                            "caching": "None"
+                        }
+                    ]
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -187,7 +202,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2021-07-01",
-            "name": "[concat(parameters('vmName'), '/DisableTelemetryScript')]",
+            "name": "[concat(parameters('vmName'), '/', 'osprep')]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
@@ -199,9 +214,9 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "https://github.com/mcooper3000/cloudlab/blob/main/windows/osprep.ps1"
+                        "[concat('https://', parameters('storageAccount'), '.blob.core.windows.net/buildartifacts/osprep.ps1')]"
                     ],
-                    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File osprep.ps1"
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Bypass -NoProfile -File osprep.ps1"
                 }
             }
         }
@@ -210,10 +225,6 @@
         "adminUsername": {
             "type": "string",
             "value": "[parameters('adminUsername')]"
-        },
-        "vmPublicIP": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')), '2021-05-01').ipAddress]"
         }
     }
 }

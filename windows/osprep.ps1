@@ -1,6 +1,19 @@
 # Initialize log content
 $logContent = @()
 
+# Identify the RAW (uninitialized) disk
+$disk = Get-Disk | Where-Object PartitionStyle -Eq 'RAW'
+
+if ($disk) {
+    # Initialize as GPT
+    Initialize-Disk -Number $disk.Number -PartitionStyle GPT -PassThru |
+        New-Partition -UseMaximumSize -DriveLetter S |
+        Format-Volume -FileSystem NTFS -NewFileSystemLabel "Data" -Confirm:$false
+
+    $logContent += "Disk initialized, partitioned, and mounted as S: with label 'Data'"
+} else {
+    $logContent += "No RAW disk found. Skipping disk setup."
+}
 
 # Make admin directory
 New-Item -Path "C:\admin" -ItemType Directory -Force
@@ -10,19 +23,10 @@ New-Item -Path "C:\admin\temp" -ItemType Directory -Force
 New-Item -Path "C:\admin\backup" -ItemType Directory -Force
 New-Item -Path "C:\admin\config" -ItemType Directory -Force
 
-# Create a sample script in the scripts directory
-$scriptContent = @"
-# Sample PowerShell script
-Write-Host "Hello, World!"
-pause
-"@
+# Set PrivacyConsentStatus during OOBE
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" -Name "PrivacyConsentStatus" -Value 1
 
-# Save the sample script
-$scriptPath = "C:\admin\scripts\sample.ps1"
-Set-Content -Path $scriptPath -Value $scriptContent
-$logContent += "Sample script created successfully."
-
-# Disable Allow Telemetry during OOBE
+# Disable Allow Telemetry
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -Force
 $logContent += "Telemetry disabled successfully."
 
@@ -34,9 +38,12 @@ $logContent += "Windows Error Reporting disabled successfully."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SmartScreenEnabled" -Value "Off" -Force
 $logContent += "Windows SmartScreen disabled successfully."
 
+# Disable Windows Update
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -Value 1 -Force
+$logContent += "Windows Update disabled successfully."
+
+
 # Write log content to file
 $logFilePath = "C:\admin\logs\osprep.log"
 $logContent | Out-File -FilePath $logFilePath -Encoding UTF8 -Force
 $logContent
-Start-Sleep -Seconds 5
-exit 0
