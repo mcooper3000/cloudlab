@@ -1,0 +1,5 @@
+"computerName","armTemplate","vmSize","OSVersion","addressPrefix","subnetPrefix","vlanName","Location"
+"dc01","windows-lab-template-v2.json", "Standard_D2s_v3","2025-Datacenter","10.0.0.0/16","10.0.0.0/24","vlan10","East US"
+"mem01","windows-lab-template-v2.json", "Standard_D2s_v3","2025-Datacenter","10.0.0.0/16","10.0.0.0/24","vlan10","East US"
+"dc02","windows-lab-template-v2.json", "Standard_D2s_v3","2025-Datacenter","192.168.1.0/24","192.168.1.0/24","vlan20","West US"
+"mem02","windows-lab-template-v2.json", "Standard_D2s_v3","2025-Datacenter","192.168.1.0/24","192.168.1.0/24","vlan20","West US"
