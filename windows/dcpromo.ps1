@@ -1,8 +1,8 @@
 # This script automates the promotion of a Windows Server to a Domain Controller using PowerShell.
 
 # Variables
-$DomainName = "mctraining.co.uk"
-$SafeModePassword = (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force)
+$DomainName = Read-Host "Enter the domain name"
+$SafeModePassword = Read-Host "Enter the Safe Mode Administrator Password" -AsSecureString
 
 # Install the Active Directory Domain Services role
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
@@ -13,14 +13,13 @@ Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 #
 if ($env:computername -eq "DC01") {
 
-
     Import-Module ADDSDeployment
     Install-ADDSForest `
         -CreateDnsDelegation:$false `
         -DatabasePath "C:\Windows\NTDS" `
         -DomainMode "Win2025" `
-        -DomainName "mctesting.co.uk" `
-        -DomainNetbiosName "MCTESTING" `
+        -DomainName $DomainName `
+        -DomainNetbiosName $DomainName.Split('.')[0].ToUpper() `
         -ForestMode "Win2025" `
         -InstallDns:$true `
         -LogPath "C:\Windows\NTDS" `
@@ -29,4 +28,3 @@ if ($env:computername -eq "DC01") {
         -Force:$true `
         -SafeModeAdministratorPassword $SafeModePassword
 }
-

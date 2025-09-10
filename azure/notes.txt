@@ -1,9 +1,12 @@
 Known Issues
 * Using windows-lab-template.json Each VM is on the same Private IP 
 
+Complete
+* Create 2 vnets and each have a DC and mem server to show office locations
+
 Objectives
 * Create templates for DC and Member
-* Create 2 vnets and each have a DC and mem server to show office locations
+* Add additional dataDisk
 * Create firewall rules between DCs
 * Create DCPromo First DC script
 * Create DCPromo Secondary DC script
@@ -11,6 +14,4 @@ Objectives
 * Create OU structure, Users and Groups
 * Create ADJoin script
 * Join Members to Domain 
-
-
 

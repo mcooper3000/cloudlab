@@ -155,18 +155,18 @@ $jobs | ForEach-Object { Wait-Job $_ } | Select-Object Name,State
 $jobs | ForEach-Object {
     Receive-Job $_
     Remove-Job $_
-} | Select-Object Name,State,PSBeginTime,PSEndTime,@{Name="Duration";Expression={New-TimeSpan -Start $_.PSBeginTime -End $_.PSEndTime}}
+} 
 
 
 $endTime = Get-Date
-$duration = New-timespan $endTime  $startTime
+$duration = New-timespan -Start $startTime -End $endTime
 Write-Host "Deployment completed in $($duration.TotalMinutes) minutes." -ForegroundColor Green
 
 
 ################################################
 # Retrieve the public IP address of the VM
 $vmPublicIPs = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName
-$AvailableIPs = $vmPublicIPs.Name | % { $_.split("-")[0] }
+$AvailableIPs = $vmPublicIPs.Name | % { $_.split("-")[0] } | sort
 
 $targetVm = Read-Host "Enter the name of the VM to RDP to ($($AvailableIPs -join ","))"
 $targetVM = $vmPublicIPs | Where-Object { $_.Name -match $targetVm } 
@@ -179,10 +179,6 @@ else {
 
     # Start the RDP session
     Write-Host "Starting RDP session to $($targetVM.IpAddress)..."
-
-    Start-Process mstsc -ArgumentList "/v:$($targetVM.IpAddress) /admin /f"
-
-
     New-RdpSession -IPAddress $targetVM.IpAddress -Username $adminUsername
 
 }
